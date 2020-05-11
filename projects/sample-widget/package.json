@@ -15,5 +15,8 @@
     "@angular/animations": "~9.0.0",
     "lodash": "^4.17.15",
     "rxjs": "~6.5.4"
-  }
+  },
+  "bundledDependencies": [
+    "moment"
+  ]
 }

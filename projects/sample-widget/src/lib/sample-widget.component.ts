@@ -19,6 +19,7 @@ import {
     WidgetAppState,
 } from '@uipath/widget.sdk';
 
+import * as moment_ from 'moment';
 import { BehaviorSubject } from 'rxjs';
 import {
     filter,
@@ -27,6 +28,7 @@ import {
 
 import { InputDialogComponent } from './input-dialog/input-dialog.component';
 
+const moment = moment_;
 type ProcessIdToAlias = Record<string, string>;
 
 @Component({
@@ -56,6 +58,7 @@ export class SampleWidgetComponent {
     storageFactory: PersistentStoreFactory,
     appState: WidgetAppState,
   ) {
+    console.log(moment());
     appState.language$.subscribe(console.log);
     appState.theme$.subscribe(console.log);
     this.store = storageFactory.create<ProcessIdToAlias>('SAMPLE_WIDGET'); // TODO: change key
