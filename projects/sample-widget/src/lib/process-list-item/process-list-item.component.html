@@ -1,18 +1,18 @@
 <ng-container *ngIf="process.status$ | async as status">
-    <ui-widget-item [tooltip]="process.name + (alias ? ' a.k.a. ' + alias : '') + '\n\nVersion: ' + process.version"
+    <ui-widget-item [tooltip]="process.name + (alias ? '스케쥴': '') + '\n\n버전: ' + process.version"
                     (dblclick)="dispatch(status.isRunning ? ActionType.Stop : ActionType.Start)"
                     class="full-width-item">
         <ng-container ui-widget-item-title>
-            <span class="title">{{ alias || process.name }}</span>
+            <span class="title">{{ process.name }}</span>
         </ng-container>
         <ng-container ui-widget-item-subtitle>
             <span class="subtitle">
                 <ng-container *ngIf="process.state === ProcessInstallationState.NotInstalled; else lastRunTmpl">
-                    Awaiting Install
+                    설치 대기
                 </ng-container>
                 <ng-template #lastRunTmpl>
                     <ng-container *ngIf="status?.lastRunDate">
-                        {{'Last run '}}
+                        {{'최종 실행 시간: '}}
                         <ui-format-distance [date]="status?.lastRunDate"></ui-format-distance>
                     </ng-container>
                 </ng-template>
@@ -21,7 +21,7 @@
         <ng-container ui-widget-item-actions>
             <ng-container *ngIf="process.state === ProcessInstallationState.NotInstalled">
                 <button [disabled]="disabled"
-                        [matTooltip]="'Install'"
+                        [matTooltip]="'설치중...'"
                         [attr.aria-label]="'Install process'"
                         (click)="dispatch(ActionType.Install)"
                         color="accent"
@@ -33,7 +33,7 @@
             <ng-container *ngIf="process.state === ProcessInstallationState.Installed">
                 <button *ngIf="!status?.isRunning; else stopButton"
                         [disabled]="disabled || status?.isStopping"
-                        [matTooltip]="'Start'"
+                        [matTooltip]="'시작'"
                         [attr.aria-label]="'Start'"
                         (click)="dispatch(ActionType.Start)"
                         color="accent"
@@ -45,7 +45,7 @@
                 <ng-template #stopButton>
                     <button *ngIf="status?.isRunning"
                             [disabled]="disabled || status?.isStopping"
-                            [matTooltip]="'Stop'"
+                            [matTooltip]="'중지'"
                             [attr.aria-label]="'Stop'"
                             (click)="dispatch(ActionType.Stop)"
                             color="accent"
