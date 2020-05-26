@@ -25,10 +25,16 @@ import {
     switchMapTo,
 } from 'rxjs/operators';
 
-import { InputDialogComponent } from './input-dialog/input-dialog.component';
+import { interval } from 'rxjs';
+import { timeout } from 'rxjs/operators';
+import { getLocaleDateTimeFormat } from '@angular/common';
+import { O_NOFOLLOW } from 'constants';
 
 type ProcessIdToAlias = Record<string, string>;
-
+//type ProcessIdToAlias = { key: string, name: string}
+//type ProcessIdToSchedule = Record<string, CronJob>;
+//type ProcessIdToSchedule = { key: string, cron: CronJob}
+type ScheduleEnablement = {key: string, status: boolean}
 @Component({
   selector: 'sample-widget',
   templateUrl: './sample-widget.component.html',
@@ -45,10 +51,9 @@ export class SampleWidgetComponent {
   public RotateState = RotateState;
   public CollapseState = CollapseState;
   public isCollapsed = false;
-  public processList$ = this.robotService.processList$;
-  public processIdToAlias = new BehaviorSubject<ProcessIdToAlias>({});
-
-  private store: PersistentStore<ProcessIdToAlias>;
+  private processSchedule = {};
+  private minutes = interval(60000);
+  private store: PersistentStore<ScheduleEnablement>;
 
   constructor(
     private robotService: RobotService,
@@ -58,26 +63,26 @@ export class SampleWidgetComponent {
   ) {
     appState.language$.subscribe(console.log);
     appState.theme$.subscribe(console.log);
-    this.store = storageFactory.create<ProcessIdToAlias>('SAMPLE_WIDGET'); // TODO: change key
-    this.refreshProcessAliases();
+    this.store = storageFactory.create<ScheduleEnablement>('STATUS'); // TODO: change key
+    storageFactory.create<{}>("")
+    this.minutes.pipe( timeout( new Date( new Date().getFullYear()+1, 1, 1))).subscribe( value => this.checkSchedule(value))
   }
 
-  public refreshProcessAliases() {
-    this.store.read().subscribe(mapping => this.processIdToAlias.next(mapping || {}));
-  }
+  public checkSchedule( val)
+  {
 
-  public async rename(processKey: string, currentName: string) {
-    const result = await this.dialogService.custom<string>(InputDialogComponent, currentName, { panelClass: 'input-dialog' })
-      .afterClosedResult()
-      .toPromise();
-    if (!result) {
-      return;
+  }
+  public updateStatus( evt)
+  {
+    if ( evt.checked)
+    {
+      console.log('just starck check schedule....');
+      this.store.update( { key: "enable", status: true});
     }
-
-    this.store.patch({ [processKey]: result })
-      .subscribe(
-        () => this.refreshProcessAliases(),
-      );
+    else
+    {
+      this.store.update( { key: "enable", status: false});
+    }
   }
 
   public async actionHandler({ actionType, processKey, source }: ProcessAction) {

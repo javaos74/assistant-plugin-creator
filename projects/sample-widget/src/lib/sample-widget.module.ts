@@ -6,6 +6,7 @@ import {
     ReactiveFormsModule,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,17 +21,13 @@ import {
     WidgetItemModule,
 } from '@uipath/widget.sdk';
 
-import { InputDialogComponent } from './input-dialog/input-dialog.component';
 import { MainComponent } from './main.component';
-import { ProcessListItemComponent } from './process-list-item/process-list-item.component';
 import { SampleWidgetComponent } from './sample-widget.component';
 
 @NgModule({
   declarations: [
     SampleWidgetComponent,
-    MainComponent,
-    ProcessListItemComponent,
-    InputDialogComponent
+    MainComponent
   ],
   imports: [
     TitleBarComponentModule,
@@ -40,6 +37,7 @@ import { SampleWidgetComponent } from './sample-widget.component';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatListModule,
     MatProgressBarModule,

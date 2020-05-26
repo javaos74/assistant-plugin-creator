@@ -44,5 +44,8 @@
       }
     }
   },
-  "defaultProject": "sample-widget"
+  "defaultProject": "sample-widget",
+  "cli": {
+    "analytics": false
+  }
 }

@@ -1,5 +1,4 @@
-<mat-card *ngIf="processIdToAlias | async as idToAlias"
-          class="mat-elevation-z2">
+<mat-card class="mat-elevation-z2">
     <mat-card-header>
         <mat-card-title>
             스케줄 위젯
@@ -15,24 +14,10 @@
         </div>
     </mat-card-header>
     <mat-card-content [@collapse]="isCollapsed ? CollapseState.Hide : CollapseState.Show">
-        <ng-container *ngIf="processList$ | async as processList">
-            <mat-list *ngIf="processList?.length; else emptyProcessList">
-                <ng-container *ngFor="let process of processList">
-                    <mat-list-item>
-                        <process-list-item [process]="process"
-                                           [alias]="idToAlias[process.key]"
-                                           (processAction)="actionHandler($event)"
-                                           (click)="rename(process.key, idToAlias[process.key] || process.name)">
-                        </process-list-item>
-                    </mat-list-item>
-                    <mat-divider></mat-divider>
-                </ng-container>
-            </mat-list>
-        </ng-container>
-        <ng-template #emptyProcessList>
-            <div class="empty-process-list">
-                프로세스 없음 :(
-            </div>
-        </ng-template>
+        <div class="empty-process-list">
+        <mat-checkbox class="btn-block" (change)="updateStatus($event)">
+            스케줄 활성화!
+        </mat-checkbox>
+        </div>
     </mat-card-content>
 </mat-card>
