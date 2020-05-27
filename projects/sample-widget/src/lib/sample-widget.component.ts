@@ -52,8 +52,10 @@ export class SampleWidgetComponent {
   public CollapseState = CollapseState;
   public isCollapsed = false;
   private processSchedule = {};
-  private minutes = interval(60000);
+  private minutes = interval(30000);
   private store: PersistentStore<ScheduleEnablement>;
+  private schedule : PersistentStore<{}>;
+  private clickSchedule:boolean;
 
   constructor(
     private robotService: RobotService,
@@ -64,24 +66,44 @@ export class SampleWidgetComponent {
     appState.language$.subscribe(console.log);
     appState.theme$.subscribe(console.log);
     this.store = storageFactory.create<ScheduleEnablement>('STATUS'); // TODO: change key
-    storageFactory.create<{}>("")
+    //this.schedule = storageFactory.create<{}>("SCHEDULE_WIDGET_DATA");
     this.minutes.pipe( timeout( new Date( new Date().getFullYear()+1, 1, 1))).subscribe( value => this.checkSchedule(value))
+
+    //this.schedule.read().subscribe( value => console.log(value));
   }
 
   public checkSchedule( val)
   {
-
+    console.log(val)
+    if( this.clickSchedule)
+    {
+      let reminders = Array.prototype.slice.call( document.getElementsByClassName("reminder-action"));
+      reminders.forEach( elm => {
+        let btns = Array.prototype.slice.call( elm.getElementsByTagName("button"));
+        btns.forEach( btn => {
+          if( btn.getAttribute("data-testid") == 'reminder-action-yes')
+          {
+            console.log('start process...');
+            btn.click();
+          }
+        });
+      });
+    }
   }
   public updateStatus( evt)
   {
     if ( evt.checked)
     {
+      this.clickSchedule = true;
+      this.schedule.read().subscribe( value => console.log(value));
       console.log('just starck check schedule....');
-      this.store.update( { key: "enable", status: true});
+      this.store.patch( { key: "enable", status: true});
     }
     else
     {
-      this.store.update( { key: "enable", status: false});
+      this.clickSchedule = false;
+      console.log('just stop check schedule....');
+      this.store.patch( { key: "enable", status: false});
     }
   }
 
