@@ -23,9 +23,10 @@ import { BehaviorSubject } from 'rxjs';
 import {
     filter,
     switchMapTo,
+    subscribeOn,
 } from 'rxjs/operators';
 
-import { interval } from 'rxjs';
+import { interval, timer } from 'rxjs';
 import { timeout } from 'rxjs/operators';
 import { getLocaleDateTimeFormat } from '@angular/common';
 import { O_NOFOLLOW } from 'constants';
@@ -34,7 +35,7 @@ type ProcessIdToAlias = Record<string, string>;
 //type ProcessIdToAlias = { key: string, name: string}
 //type ProcessIdToSchedule = Record<string, CronJob>;
 //type ProcessIdToSchedule = { key: string, cron: CronJob}
-type ScheduleEnablement = {key: string, status: boolean}
+type ScheduleEnablement = Record<string, boolean>;
 @Component({
   selector: 'sample-widget',
   templateUrl: './sample-widget.component.html',
@@ -52,10 +53,11 @@ export class SampleWidgetComponent {
   public CollapseState = CollapseState;
   public isCollapsed = false;
   private processSchedule = {};
-  private minutes = interval(30000);
+  //private minutes = interval(60000);
+  private timer = undefined;
   private store: PersistentStore<ScheduleEnablement>;
-  private schedule : PersistentStore<{}>;
   private clickSchedule:boolean;
+  public scheduleStatus = new BehaviorSubject<ScheduleEnablement>({});
 
   constructor(
     private robotService: RobotService,
@@ -63,13 +65,30 @@ export class SampleWidgetComponent {
     storageFactory: PersistentStoreFactory,
     appState: WidgetAppState,
   ) {
+    this.clickSchedule = false;
     appState.language$.subscribe(console.log);
     appState.theme$.subscribe(console.log);
-    this.store = storageFactory.create<ScheduleEnablement>('STATUS'); // TODO: change key
-    //this.schedule = storageFactory.create<{}>("SCHEDULE_WIDGET_DATA");
-    this.minutes.pipe( timeout( new Date( new Date().getFullYear()+1, 1, 1))).subscribe( value => this.checkSchedule(value))
+    this.store = storageFactory.create<ScheduleEnablement>('SCHEDULE_STATUS'); // TODO: change key
+    this.refreshStatus();
+    const onetimer = timer(1000).subscribe( val => this.enableCheckbox())
+  }
 
-    //this.schedule.read().subscribe( value => console.log(value));
+  public enableCheckbox( ) {
+    if( this.clickSchedule)
+    {
+      let elm = document.getElementById('mat-checkbox-1'); // TODO: unique 한지 체크해봐야 함.
+      elm.classList.add("mat-checkbox-checked");
+      this.timer = timer(10000);
+      this.timer.subscribe( val => this.checkSchedule(val))
+    }
+  }
+
+  public refreshStatus() {
+    this.store.read().subscribe(mapping => this.scheduleStatus.next(mapping || {}));
+    this.scheduleStatus.subscribe( val => {
+      if( val.hasOwnProperty('enable'))
+        this.clickSchedule = val['enable'];
+    });
   }
 
   public checkSchedule( val)
@@ -81,13 +100,22 @@ export class SampleWidgetComponent {
       reminders.forEach( elm => {
         let btns = Array.prototype.slice.call( elm.getElementsByTagName("button"));
         btns.forEach( btn => {
-          if( btn.getAttribute("data-testid") == 'reminder-action-yes')
-          {
-            console.log('start process...');
-            btn.click();
+          if( btn.getAttribute("data-testid") == 'reminder-action-yes') {
+            let running = Array.prototype.slice.call(document.getElementsByTagName("ui-running-process-widget"));
+            let runButtons = Array.prototype.slice.call( running[0].getElementsByTagName("button"));
+            if( runButtons.length == 1) {// no running process
+              console.log('start process...');
+              btn.click();
+            }
+            else
+            {
+              console.log('already process is running, wait until current process exits');
+            }
           }
         });
       });
+      this.timer = timer(10000);
+      this.timer.subscribe( val => this.checkSchedule(val));
     }
   }
   public updateStatus( evt)
@@ -95,15 +123,16 @@ export class SampleWidgetComponent {
     if ( evt.checked)
     {
       this.clickSchedule = true;
-      this.schedule.read().subscribe( value => console.log(value));
+      this.timer = timer(10000);
+      this.timer.subscribe( val => this.checkSchedule(val));
       console.log('just starck check schedule....');
-      this.store.patch( { key: "enable", status: true});
+      this.store.patch( { "enable": true}).subscribe( () => this.refreshStatus(),);
     }
     else
     {
       this.clickSchedule = false;
       console.log('just stop check schedule....');
-      this.store.patch( { key: "enable", status: false});
+      this.store.patch( { "enable" : false}).subscribe( () => this.refreshStatus(),);
     }
   }
 
