@@ -96,20 +96,23 @@ export class SampleWidgetComponent {
     console.log(val)
     if( this.clickSchedule)
     {
-      let reminders = Array.prototype.slice.call( document.getElementsByClassName("reminder-action"));
+      let reminders = Array.prototype.slice.call( document.getElementsByClassName("reminder-action persistent-action"));
       reminders.forEach( elm => {
         let btns = Array.prototype.slice.call( elm.getElementsByTagName("button"));
         btns.forEach( btn => {
           if( btn.getAttribute("data-testid") == 'reminder-action-yes') {
-            let running = Array.prototype.slice.call(document.getElementsByTagName("ui-running-process-widget"));
-            let runButtons = Array.prototype.slice.call( running[0].getElementsByTagName("button"));
-            if( runButtons.length == 1) {// no running process
+            let running = Array.prototype.slice.call(document.getElementsByTagName("ui-running-process-item"));
+            if( running.length >= 1) {
+              let runButtons = Array.prototype.slice.call( running[0].getElementsByTagName("mat-icon"));
+              if( runButtons.length == 0) {// no running process
+                console.log('start process...');
+                btn.click();
+              } else {
+                console.log('already process is running, wait until current process exits');
+              }
+            } else {
               console.log('start process...');
               btn.click();
-            }
-            else
-            {
-              console.log('already process is running, wait until current process exits');
             }
           }
         });
